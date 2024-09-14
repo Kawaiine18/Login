@@ -1,89 +1,133 @@
-char* allouer(int d)
+void getdata_name(char** name)
 {
-    char* A = NULL;
-    A = (char*)malloc(d*sizeof(char));
-    if(A == NULL)
-    {
-        printf("Erreur d'allocation !!");
-        exit (1);
-    }
-    return (A);
-}
-char* allouer_2(int d)
+	*name = (char*)malloc(d*sizeof(char)),
+	printf("entrez votre nom: ");
+	scanf("%s",*name);
+} 
+void getdata_password(char** password)
 {
-    char* B = NULL;
-    B = (char*)malloc(d*sizeof(char));
-    if(B == NULL)
-    {
-        printf("Erreur d'allocation !!");
-        exit (1);
-    }
-    return (B);
-}
-void getdata(char* nom, char* password)
-{
-    if(nom != NULL)
-    {
-        printf("Entrez votre nom:");
-        scanf("%s",nom);
-    }
-    if(password != NULL)
-    {
-        printf("Entrez votre mot de passe:");
-        scanf("%s",password);
-    }
+	*password = (char*)malloc(d*sizeof(char));
+	printf("Entrez votre mot de passe: ");
+	scanf("%s",*password);
 }
 FILE* ouverture(FILE* file)
 {
-    FILE* fichier = NULL;
-    fichier = fopen("/home/mit/login.txt","a+");
-    if(fichier == NULL)
-    {
-        printf("Erreur de l'ouverture du fichier!");
-        exit (1);
-    }
-    return (fichier);
+	FILE* fichier = NULL;
+	fichier = fopen("login","a+");	
+	if(fichier == NULL)
+	{
+		printf("Erreur lors de l'ouverture du fichier\n");
+		exit(1);
+	}
+	return (fichier);
 }
-void traitement(FILE* file,char* nom,char* password,int d)
+void inscription(char* name,char* password,FILE* file)
 {
-    fprintf(file,"%s %s\n",nom,password);
-    fclose (file);
+	ouverture(file);
+	fprintf(file, "%s %s\n", name, password);
+	fclose(file);
+	printf("vous etes maintenant inscrit\n");
 }
-void comparer(FILE* file,char* nom,char* password,int d)
+void connecter(char* name,char* password,FILE* file)
 {
-    file = fopen("/home/mit/login.txt","r");
-    char chaine[d];
-    char phrase[d];
-    char pwd[d];
-    char name[d];
-    do
-    {
-        fgets(chaine,d,file);
-        strcpy(phrase,chaine);
-        sscanf(phrase,"%s %s",name,pwd);
-        if(strcmp(nom,name)==0)
-        {
-           printf("deja inscrit\n");
-            if(strcmp(password,pwd) == 0)
-            {
-                printf("bienvenue");
-            }
-            else if(strcmp(password,pwd) != 0)
-            {
-                printf("mot de passe incorect");
-            }
-           break;
-        }
-        else
-        {
-            printf("Veulluier vous s'inscrire\n");
-            fclose(file);
-            ouverture(file);
-            getdata(nom,password);
-            traitement(file,nom,password,d);
-            printf("Vous etes maintenant inscrit\n");
-            break;
-        }
-    }
-    while(!feof(file));
+	char* chaine = (char*)malloc(d*sizeof(char));
+	char* phrase = (char*)malloc(d*sizeof(char));
+	char* nom = (char*)malloc(d*sizeof(char));
+	char* pwd = (char*)malloc(d*sizeof(char));
+	int choix;
+	file = fopen("login","r");
+	do
+	{
+		fgets(chaine,d,file);
+		strcpy(phrase,chaine);
+		sscanf(phrase,"%s %s",nom,pwd);
+		if(strcmp(name,nom) == 0)
+		{
+			while(1)
+			{														
+				if(strcmp(password,pwd) != 0)
+				{	
+				printf("mot de passe incorecte!!,Veuillez ressaiez\n");	 							
+				getdata_password(&password);
+				}
+				else
+				{
+					printf("bienvenu\n");
+				break;
+				}
+			}
+			break;
+		}
+		else 
+		{
+		printf("Vous n'avez pas encore de compte, Veuillez vous s'incrire\n");				printf("Vous voulez s'inscrire ?: \n\tsi oui entrez 0\n\tsi vous vous vouliez revenir sur le menu entrez 1\n\tPour quitter taper n'importe quel nombre: ");
+		if(scanf("%d",&choix) !=1)
+		{
+			printf("Veuillez entrez un nombre!\n");
+		}
+		switch(choix)
+		{
+			case 0:
+				getdata_name(&name);
+				getdata_password(&password);
+				file = ouverture(file);
+				inscription(name,password,file);
+			break;
+			case 1:
+				menu(nom,password,file);
+			default:
+				exit(0);
+		}
+		break;
+		}
+	}
+	while(!feof(file));
+	free(chaine);
+	free(phrase);
+	free(nom);
+	free(pwd);
+	fclose(file);
+}
+void Free_All_Array(char* name,char* password)
+{
+	free(name);
+	free(password);	
+}		
+void menu(char* name,char* password,FILE* file)
+{
+	int choix;
+	int result;
+	int input;
+	while(1)
+	{
+		printf("Entrez:\n\t0 pour s'incrire\n\t1 pour connecter\n\tn'importe quel nombre pour quitter: ");
+		result = scanf("%d",&choix);
+		if(result != 1)	
+		{
+			while((input=getchar()) != '\n' && input != EOF);
+			printf("veuillez entrez un nombre!\n");
+		}
+		else
+		{
+			break;
+		}
+	}
+	switch(choix)
+	{
+		case 0:
+			getdata_name(&name);
+			getdata_password(&password);
+			file = ouverture(file);
+			inscription(name,password,file);
+			break;
+		case 1:
+			getdata_name(&name);
+			getdata_password(&password);
+			connecter(name,password,file);
+			break;	
+		default:
+			exit(0);
+			break;
+		}	
+	Free_All_Array(name,password);
 }
